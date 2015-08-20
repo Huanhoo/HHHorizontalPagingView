@@ -4,4 +4,4 @@ HHHorizontalPagingView是一个实现上下滚动时菜单悬停在顶端，并�
 
 
 
-![演示](https://s3.amazonaws.com/f.cl.ly/items/3n0u3T47471R0b373x0w/1.gif")
+![demo](https://github.com/huh12321/HHHorizontalPagingView/blob/master/demo.gif)
