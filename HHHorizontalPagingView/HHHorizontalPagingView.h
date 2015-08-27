@@ -12,6 +12,11 @@
 @interface HHHorizontalPagingView : UIView
 
 /**
+ *  segment据顶部的距离
+ */
+@property (nonatomic, assign) CGFloat segmentTopSpace;
+
+/**
  *  实例化横向分页控件
  *
  *  @param headerView     tableHeaderView

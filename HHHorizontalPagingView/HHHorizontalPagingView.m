@@ -108,6 +108,14 @@ static NSInteger pagingButtonTag                 = 1000;
     self.currentScrollView = [self.contentViews firstObject];
 }
 
+- (void)setSegmentTopSpace:(CGFloat)segmentTopSpace {
+    if(segmentTopSpace > self.headerViewHeight) {
+        _segmentTopSpace = self.headerViewHeight;
+    }else {
+        _segmentTopSpace = segmentTopSpace;
+    }
+}
+
 - (UIView *)segmentView {
     if(!_segmentView) {
         _segmentView = [[UIView alloc] init];
@@ -215,14 +223,14 @@ static NSInteger pagingButtonTag                 = 1000;
         
         if(deltaY > 0) {    //向上滚动
             
-            if(headerDisplayHeight - deltaY <= 0) {
-                self.headerOriginYConstraint.constant = -headerViewHeight;
+            if(headerDisplayHeight - deltaY <= self.segmentTopSpace) {
+                self.headerOriginYConstraint.constant = -headerViewHeight+self.segmentTopSpace;
                 
             }else {
                 self.headerOriginYConstraint.constant -= deltaY;
             }
-            if(headerDisplayHeight <= 0) {
-                self.headerOriginYConstraint.constant = -headerViewHeight;
+            if(headerDisplayHeight <= self.segmentTopSpace) {
+                self.headerOriginYConstraint.constant = -headerViewHeight+self.segmentTopSpace;
             }
             
         }else {            //向下滚动
