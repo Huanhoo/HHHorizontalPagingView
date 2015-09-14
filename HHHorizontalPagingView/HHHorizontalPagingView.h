@@ -17,6 +17,21 @@
 @property (nonatomic, assign) CGFloat segmentTopSpace;
 
 /**
+ *  自定义segmentButton的size
+ */
+@property (nonatomic, assign) CGSize segmentButtonSize;
+
+/**
+ *  切换视图
+ */
+@property (nonatomic, strong, readonly) UIView *segmentView;
+
+/**
+ *  视图切换的回调block
+ */
+@property (nonatomic, copy) void (^pagingViewSwitchBlock)(NSInteger switchIndex);
+
+/**
  *  实例化横向分页控件
  *
  *  @param headerView     tableHeaderView

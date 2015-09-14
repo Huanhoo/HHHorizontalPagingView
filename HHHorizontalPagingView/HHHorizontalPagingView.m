@@ -14,7 +14,7 @@
 @property (nonatomic, strong) NSArray            *segmentButtons;
 @property (nonatomic, strong) NSArray            *contentViews;
 
-@property (nonatomic, strong) UIView             *segmentView;
+@property (nonatomic, strong, readwrite) UIView  *segmentView;
 
 @property (nonatomic, strong) UICollectionView   *horizontalCollectoinView;
 
@@ -23,6 +23,8 @@
 @property (nonatomic, assign) CGFloat            headerViewHeight;
 @property (nonatomic, assign) CGFloat            segmentBarHeight;
 @property (nonatomic, assign) BOOL               isSwitching;
+
+@property (nonatomic, strong) NSMutableArray     *segmentButtonConstraintArray;
 
 @end
 
@@ -57,6 +59,7 @@ static NSInteger pagingButtonTag                 = 1000;
     pagingView.contentViews                   = contentViews;
     pagingView.headerViewHeight               = headerHeight;
     pagingView.segmentBarHeight               = segmentHeight;
+    pagingView.segmentButtonConstraintArray   = [NSMutableArray array];
     
     UICollectionViewFlowLayout *tempLayout = (id)pagingView.horizontalCollectoinView.collectionViewLayout;
     tempLayout.itemSize = pagingView.horizontalCollectoinView.frame.size;
@@ -97,7 +100,7 @@ static NSInteger pagingButtonTag                 = 1000;
 
 - (void)configureContentView {
     for(UIScrollView *v in self.contentViews) {
-        [v  setContentInset:UIEdgeInsetsMake(self.headerViewHeight+self.segmentBarHeight, 0., 0., 0.)];
+        [v  setContentInset:UIEdgeInsetsMake(self.headerViewHeight+self.segmentBarHeight, 0., v.contentInset.bottom, 0.)];
         v.alwaysBounceVertical = YES;
         v.showsVerticalScrollIndicator = NO;
         v.contentOffset = CGPointMake(0., -self.headerViewHeight-self.segmentBarHeight);
@@ -116,31 +119,68 @@ static NSInteger pagingButtonTag                 = 1000;
     }
 }
 
+- (void)setSegmentButtonSize:(CGSize)segmentButtonSize {
+    _segmentButtonSize = segmentButtonSize;
+    [self configureSegmentButtonLayout];
+    
+}
+
 - (UIView *)segmentView {
     if(!_segmentView) {
         _segmentView = [[UIView alloc] init];
-        if([self.segmentButtons count] > 0) {
-            CGFloat buttonWidth = [[UIScreen mainScreen] bounds].size.width/(CGFloat)[self.segmentButtons count];
-            for(int i = 0; i < [self.segmentButtons count]; i++) {
-                UIButton *segmentButton = self.segmentButtons[i];
-                segmentButton.tag = pagingButtonTag+i;
-                [segmentButton addTarget:self action:@selector(segmentButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
-                [_segmentView addSubview:segmentButton];
-                
-                if(i == 0) {
-                    [segmentButton setSelected:YES];
-                }
-                
-                segmentButton.translatesAutoresizingMaskIntoConstraints = NO;
-                [_segmentView addConstraint:[NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:_segmentView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
-                [_segmentView addConstraint:[NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:_segmentView attribute:NSLayoutAttributeLeft multiplier:1 constant:i*buttonWidth]];
-                [_segmentView addConstraint:[NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:_segmentView attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
-                [segmentButton addConstraint:[NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:0 multiplier:1 constant:buttonWidth]];
-                
-            }
-        }
+        [self configureSegmentButtonLayout];
     }
     return _segmentView;
+}
+
+- (void)configureSegmentButtonLayout {
+    if([self.segmentButtons count] > 0) {
+        
+        CGFloat buttonTop    = 0.f;
+        CGFloat buttonLeft   = 0.f;
+        CGFloat buttonWidth  = 0.f;
+        CGFloat buttonHeight = 0.f;
+        if(CGSizeEqualToSize(self.segmentButtonSize, CGSizeZero)) {
+            buttonWidth = [[UIScreen mainScreen] bounds].size.width/(CGFloat)[self.segmentButtons count];
+            buttonHeight = self.segmentBarHeight;
+        }else {
+            buttonWidth = self.segmentButtonSize.width;
+            buttonHeight = self.segmentButtonSize.height;
+            buttonTop = (self.segmentBarHeight - buttonHeight)/2.f;
+            buttonLeft = ([[UIScreen mainScreen] bounds].size.width - ((CGFloat)[self.segmentButtons count]*buttonWidth))/((CGFloat)[self.segmentButtons count]+1);
+        }
+        
+        [_segmentView removeConstraints:self.segmentButtonConstraintArray];
+        for(int i = 0; i < [self.segmentButtons count]; i++) {
+            UIButton *segmentButton = self.segmentButtons[i];
+            [segmentButton removeConstraints:self.segmentButtonConstraintArray];
+            segmentButton.tag = pagingButtonTag+i;
+            [segmentButton addTarget:self action:@selector(segmentButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+            [_segmentView addSubview:segmentButton];
+            
+            if(i == 0) {
+                [segmentButton setSelected:YES];
+            }
+            
+            segmentButton.translatesAutoresizingMaskIntoConstraints = NO;
+            
+            NSLayoutConstraint *topConstraint = [NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:_segmentView attribute:NSLayoutAttributeTop multiplier:1 constant:buttonTop];
+            NSLayoutConstraint *leftConstraint = [NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:_segmentView attribute:NSLayoutAttributeLeft multiplier:1 constant:i*buttonWidth+buttonLeft*i+buttonLeft];
+            NSLayoutConstraint *widthConstraint = [NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:nil attribute:0 multiplier:1 constant:buttonWidth];
+            NSLayoutConstraint *heightConstraint = [NSLayoutConstraint constraintWithItem:segmentButton attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:0 multiplier:1 constant:buttonHeight];
+            
+            [self.segmentButtonConstraintArray addObject:topConstraint];
+            [self.segmentButtonConstraintArray addObject:leftConstraint];
+            [self.segmentButtonConstraintArray addObject:widthConstraint];
+            [self.segmentButtonConstraintArray addObject:heightConstraint];
+            
+            [_segmentView addConstraint:topConstraint];
+            [_segmentView addConstraint:leftConstraint];
+            [segmentButton addConstraint:widthConstraint];
+            [segmentButton addConstraint:heightConstraint];
+        }
+        
+    }
 }
 
 - (void)segmentButtonEvent:(UIButton *)segmentButton {
@@ -149,8 +189,20 @@ static NSInteger pagingButtonTag                 = 1000;
         
     }
     [segmentButton setSelected:YES];
-    [self.horizontalCollectoinView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:segmentButton.tag-pagingButtonTag inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
-    self.currentScrollView = self.contentViews[segmentButton.tag-pagingButtonTag];
+    
+    NSInteger clickIndex = segmentButton.tag-pagingButtonTag;
+    
+    [self.horizontalCollectoinView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:clickIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    if(self.currentScrollView.contentOffset.y<-(self.headerViewHeight+self.segmentBarHeight)) {
+        [self.currentScrollView setContentOffset:CGPointMake(self.currentScrollView.contentOffset.x, -(self.headerViewHeight+self.segmentBarHeight)) animated:NO];
+    }else {
+        [self.currentScrollView setContentOffset:self.currentScrollView.contentOffset animated:NO];
+    }
+    self.currentScrollView = self.contentViews[clickIndex];
+    
+    if(self.pagingViewSwitchBlock) {
+        self.pagingViewSwitchBlock(clickIndex);
+    }
 }
 
 - (void)adjustContentViewOffset {
@@ -165,7 +217,7 @@ static NSInteger pagingButtonTag                 = 1000;
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *view = [super hitTest:point withEvent:event];
     
-    if (view == self.headerView) {
+    if (view == self.headerView || view == self.segmentView) {
         self.horizontalCollectoinView.scrollEnabled = NO;
         return self.currentScrollView;
     }
@@ -187,11 +239,15 @@ static NSInteger pagingButtonTag                 = 1000;
     [cell.contentView addSubview:self.contentViews[indexPath.row]];
     
     UIScrollView *v = self.contentViews[indexPath.row];
+    
+    CGFloat scrollViewHeight = v.frame.size.height;
+    
     v.translatesAutoresizingMaskIntoConstraints = NO;
     [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:v attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
     [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:v attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeLeft multiplier:1 constant:0]];
-    [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:v attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+    [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:v attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeBottom multiplier:1 constant:scrollViewHeight == 0 ? 0 : -(cell.contentView.frame.size.height-v.frame.size.height)]];
     [cell.contentView addConstraint:[NSLayoutConstraint constraintWithItem:v attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:cell.contentView attribute:NSLayoutAttributeRight multiplier:1 constant:0]];
+    self.currentScrollView = v;
     [self adjustContentViewOffset];
     
     return cell;
@@ -254,6 +310,10 @@ static NSInteger pagingButtonTag                 = 1000;
         }
     }
     self.currentScrollView = self.contentViews[currentPage];
+    
+    if(self.pagingViewSwitchBlock) {
+        self.pagingViewSwitchBlock(currentPage);
+    }
 }
 
 - (void)dealloc {
