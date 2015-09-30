@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="7706" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8191" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7703"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
@@ -9,13 +10,26 @@
         <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="HHHeaderView">
             <rect key="frame" x="0.0" y="0.0" width="320" height="210"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="666-0G-Q9x">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="210"/>
+                </imageView>
+            </subviews>
             <color key="backgroundColor" red="0.7267527735" green="1" blue="0.85450599439999997" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="666-0G-Q9x" secondAttribute="trailing" id="Fxc-tV-tfP"/>
+                <constraint firstItem="666-0G-Q9x" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="Pxb-PZ-w7Q"/>
+                <constraint firstItem="666-0G-Q9x" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="eFo-32-Dgf"/>
+                <constraint firstAttribute="bottom" secondItem="666-0G-Q9x" secondAttribute="bottom" id="mdn-bi-Pml"/>
+            </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <connections>
+                <outlet property="headerImageView" destination="666-0G-Q9x" id="CSA-sl-TcT"/>
+                <outlet property="headerTopConstraint" destination="eFo-32-Dgf" id="FGR-Db-sp9"/>
                 <outlet property="segmentView" destination="54s-xa-CSi" id="RK2-mE-dy6"/>
             </connections>
-            <point key="canvasLocation" x="282" y="176.5"/>
+            <point key="canvasLocation" x="282" y="176"/>
         </view>
         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="54s-xa-CSi">
             <rect key="frame" x="0.0" y="0.0" width="320" height="60"/>
@@ -78,9 +92,4 @@
             <point key="canvasLocation" x="282" y="376"/>
         </view>
     </objects>
-    <simulatedMetricsContainer key="defaultSimulatedMetrics">
-        <simulatedStatusBarMetrics key="statusBar"/>
-        <simulatedOrientationMetrics key="orientation"/>
-        <simulatedScreenMetrics key="destination" type="retina4"/>
-    </simulatedMetricsContainer>
 </document>

@@ -22,6 +22,11 @@
 @property (nonatomic, assign) CGSize segmentButtonSize;
 
 /**
+ *  下拉时如需要放大，则传入的图片的上边距约束，默认为不放大
+ */
+@property (nonatomic, strong) NSLayoutConstraint *magnifyTopConstraint;
+
+/**
  *  切换视图
  */
 @property (nonatomic, strong, readonly) UIView *segmentView;

@@ -10,6 +10,8 @@
 
 @interface HHHeaderView : UIView
 
+@property (nonatomic, weak) IBOutlet NSLayoutConstraint *headerTopConstraint;
+@property (nonatomic, weak) IBOutlet UIImageView *headerImageView;
 @property (nonatomic, weak) IBOutlet UIView *segmentView;
 
 + (HHHeaderView *)headerView;

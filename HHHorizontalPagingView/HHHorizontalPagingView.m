@@ -16,10 +16,11 @@
 
 @property (nonatomic, strong, readwrite) UIView  *segmentView;
 
-@property (nonatomic, strong) UICollectionView   *horizontalCollectoinView;
+@property (nonatomic, strong) UICollectionView   *horizontalCollectionView;
 
 @property (nonatomic, strong) UIScrollView       *currentScrollView;
 @property (nonatomic, strong) NSLayoutConstraint *headerOriginYConstraint;
+@property (nonatomic, strong) NSLayoutConstraint *headerSizeHeightConstraint;
 @property (nonatomic, assign) CGFloat            headerViewHeight;
 @property (nonatomic, assign) CGFloat            segmentBarHeight;
 @property (nonatomic, assign) BOOL               isSwitching;
@@ -35,6 +36,7 @@ static void *HHHorizontalPagingViewPanContext    = &HHHorizontalPagingViewPanCon
 static NSString *pagingCellIdentifier            = @"PagingCellIdentifier";
 static NSInteger pagingButtonTag                 = 1000;
 
+#pragma mark - HHHorizontalPagingView
 + (HHHorizontalPagingView *)pagingViewWithHeaderView:(UIView *)headerView
                                         headerHeight:(CGFloat)headerHeight
                                       segmentButtons:(NSArray *)segmentButtons
@@ -47,13 +49,13 @@ static NSInteger pagingButtonTag                 = 1000;
     
     HHHorizontalPagingView *pagingView = [[HHHorizontalPagingView alloc] initWithFrame:CGRectMake(0., 0., [[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)];
     
-    pagingView.horizontalCollectoinView = [[UICollectionView alloc] initWithFrame:pagingView.frame collectionViewLayout:layout];
-    [pagingView.horizontalCollectoinView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:pagingCellIdentifier];
-    pagingView.horizontalCollectoinView.backgroundColor                = [UIColor clearColor];
-    pagingView.horizontalCollectoinView.dataSource                     = pagingView;
-    pagingView.horizontalCollectoinView.delegate                       = pagingView;
-    pagingView.horizontalCollectoinView.pagingEnabled                  = YES;
-    pagingView.horizontalCollectoinView.showsHorizontalScrollIndicator = NO;
+    pagingView.horizontalCollectionView = [[UICollectionView alloc] initWithFrame:pagingView.frame collectionViewLayout:layout];
+    [pagingView.horizontalCollectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:pagingCellIdentifier];
+    pagingView.horizontalCollectionView.backgroundColor                = [UIColor clearColor];
+    pagingView.horizontalCollectionView.dataSource                     = pagingView;
+    pagingView.horizontalCollectionView.delegate                       = pagingView;
+    pagingView.horizontalCollectionView.pagingEnabled                  = YES;
+    pagingView.horizontalCollectionView.showsHorizontalScrollIndicator = NO;
     pagingView.headerView                     = headerView;
     pagingView.segmentButtons                 = segmentButtons;
     pagingView.contentViews                   = contentViews;
@@ -61,10 +63,10 @@ static NSInteger pagingButtonTag                 = 1000;
     pagingView.segmentBarHeight               = segmentHeight;
     pagingView.segmentButtonConstraintArray   = [NSMutableArray array];
     
-    UICollectionViewFlowLayout *tempLayout = (id)pagingView.horizontalCollectoinView.collectionViewLayout;
-    tempLayout.itemSize = pagingView.horizontalCollectoinView.frame.size;
+    UICollectionViewFlowLayout *tempLayout = (id)pagingView.horizontalCollectionView.collectionViewLayout;
+    tempLayout.itemSize = pagingView.horizontalCollectionView.frame.size;
     
-    [pagingView addSubview:pagingView.horizontalCollectoinView];
+    [pagingView addSubview:pagingView.horizontalCollectionView];
     [pagingView configureHeaderView];
     [pagingView configureSegmentView];
     [pagingView configureContentView];
@@ -82,7 +84,8 @@ static NSInteger pagingButtonTag                 = 1000;
         self.headerOriginYConstraint = [NSLayoutConstraint constraintWithItem:self.headerView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0];
         [self addConstraint:self.headerOriginYConstraint];
         
-        [self.headerView addConstraint:[NSLayoutConstraint constraintWithItem:self.headerView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:0 multiplier:1 constant:self.headerViewHeight]];
+        self.headerSizeHeightConstraint = [NSLayoutConstraint constraintWithItem:self.headerView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:0 multiplier:1 constant:self.headerViewHeight];
+        [self.headerView addConstraint:self.headerSizeHeightConstraint];
     }
 }
 
@@ -103,26 +106,12 @@ static NSInteger pagingButtonTag                 = 1000;
         [v  setContentInset:UIEdgeInsetsMake(self.headerViewHeight+self.segmentBarHeight, 0., v.contentInset.bottom, 0.)];
         v.alwaysBounceVertical = YES;
         v.showsVerticalScrollIndicator = NO;
-        v.contentOffset = CGPointMake(0., -self.headerViewHeight-self.segmentBarHeight);
+        //v.contentOffset = CGPointMake(0., -self.headerViewHeight-self.segmentBarHeight);
         [v.panGestureRecognizer addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:HHHorizontalPagingViewPanContext];
         [v addObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewScrollContext];
         
     }
     self.currentScrollView = [self.contentViews firstObject];
-}
-
-- (void)setSegmentTopSpace:(CGFloat)segmentTopSpace {
-    if(segmentTopSpace > self.headerViewHeight) {
-        _segmentTopSpace = self.headerViewHeight;
-    }else {
-        _segmentTopSpace = segmentTopSpace;
-    }
-}
-
-- (void)setSegmentButtonSize:(CGSize)segmentButtonSize {
-    _segmentButtonSize = segmentButtonSize;
-    [self configureSegmentButtonLayout];
-    
 }
 
 - (UIView *)segmentView {
@@ -192,7 +181,7 @@ static NSInteger pagingButtonTag                 = 1000;
     
     NSInteger clickIndex = segmentButton.tag-pagingButtonTag;
     
-    [self.horizontalCollectoinView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:clickIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    [self.horizontalCollectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:clickIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
     if(self.currentScrollView.contentOffset.y<-(self.headerViewHeight+self.segmentBarHeight)) {
         [self.currentScrollView setContentOffset:CGPointMake(self.currentScrollView.contentOffset.x, -(self.headerViewHeight+self.segmentBarHeight)) animated:NO];
     }else {
@@ -208,20 +197,40 @@ static NSInteger pagingButtonTag                 = 1000;
 - (void)adjustContentViewOffset {
     self.isSwitching = YES;
     CGFloat headerViewDisplayHeight = self.headerViewHeight + self.headerView.frame.origin.y;
+    [self.currentScrollView layoutIfNeeded];
     if(self.currentScrollView.contentOffset.y < -self.segmentBarHeight) {
         [self.currentScrollView setContentOffset:CGPointMake(0, -headerViewDisplayHeight-self.segmentBarHeight)];
+    }else {
+        [self.currentScrollView setContentOffset:CGPointMake(0, self.currentScrollView.contentOffset.y-headerViewDisplayHeight)];
     }
-    self.isSwitching = NO;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0)), dispatch_get_main_queue(), ^{
+        self.isSwitching = NO;
+    });
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *view = [super hitTest:point withEvent:event];
     
     if (view == self.headerView || view == self.segmentView) {
-        self.horizontalCollectoinView.scrollEnabled = NO;
+        self.horizontalCollectionView.scrollEnabled = NO;
         return self.currentScrollView;
     }
     return view;
+}
+
+#pragma mark - Setter
+- (void)setSegmentTopSpace:(CGFloat)segmentTopSpace {
+    if(segmentTopSpace > self.headerViewHeight) {
+        _segmentTopSpace = self.headerViewHeight;
+    }else {
+        _segmentTopSpace = segmentTopSpace;
+    }
+}
+
+- (void)setSegmentButtonSize:(CGSize)segmentButtonSize {
+    _segmentButtonSize = segmentButtonSize;
+    [self configureSegmentButtonLayout];
+    
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -262,7 +271,7 @@ static NSInteger pagingButtonTag                 = 1000;
     
     if(context == &HHHorizontalPagingViewPanContext) {
         
-        self.horizontalCollectoinView.scrollEnabled = YES;
+        self.horizontalCollectionView.scrollEnabled = YES;
         
     }else if (context == &HHHorizontalPagingViewScrollContext) {
         
@@ -277,11 +286,10 @@ static NSInteger pagingButtonTag                 = 1000;
         CGFloat headerViewHeight    = self.headerViewHeight;
         CGFloat headerDisplayHeight = self.headerViewHeight+self.headerOriginYConstraint.constant;
         
-        if(deltaY > 0) {    //向上滚动
+        if(deltaY >= 0) {    //向上滚动
             
             if(headerDisplayHeight - deltaY <= self.segmentTopSpace) {
                 self.headerOriginYConstraint.constant = -headerViewHeight+self.segmentTopSpace;
-                
             }else {
                 self.headerOriginYConstraint.constant -= deltaY;
             }
@@ -289,10 +297,20 @@ static NSInteger pagingButtonTag                 = 1000;
                 self.headerOriginYConstraint.constant = -headerViewHeight+self.segmentTopSpace;
             }
             
-        }else {            //向下滚动
-            if (headerDisplayHeight+self.segmentBarHeight < -newOffsetY) {
-                self.headerOriginYConstraint.constant -= deltaY;
+            if (self.headerOriginYConstraint.constant >= 0 && self.magnifyTopConstraint) {
+                self.magnifyTopConstraint.constant = -self.headerOriginYConstraint.constant;
             }
+            
+        }else {            //向下滚动
+            
+            if (headerDisplayHeight+self.segmentBarHeight < -newOffsetY) {
+                self.headerOriginYConstraint.constant = -self.headerViewHeight-self.segmentBarHeight-self.currentScrollView.contentOffset.y;
+            }
+            
+            if (self.headerOriginYConstraint.constant > 0 && self.magnifyTopConstraint) {
+                self.magnifyTopConstraint.constant = -self.headerOriginYConstraint.constant;
+            }
+            
         }
     }
     
