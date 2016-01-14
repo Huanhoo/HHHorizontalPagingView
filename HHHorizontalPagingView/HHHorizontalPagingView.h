@@ -37,6 +37,11 @@
 @property (nonatomic, copy) void (^pagingViewSwitchBlock)(NSInteger switchIndex);
 
 /**
+ *  视图点击的回调block
+ */
+@property (nonatomic, copy) void (^clickEventViewsBlock)(UIView *eventView);
+
+/**
  *  实例化横向分页控件
  *
  *  @param headerView     tableHeaderView

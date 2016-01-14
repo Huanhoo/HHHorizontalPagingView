@@ -10,7 +10,7 @@
 
 @interface HHHorizontalPagingView () <UICollectionViewDataSource, UICollectionViewDelegate>
 
-@property (nonatomic, strong) UIView             *headerView;
+@property (nonatomic, weak)   UIView             *headerView;
 @property (nonatomic, strong) NSArray            *segmentButtons;
 @property (nonatomic, strong) NSArray            *contentViews;
 
@@ -18,7 +18,7 @@
 
 @property (nonatomic, strong) UICollectionView   *horizontalCollectionView;
 
-@property (nonatomic, strong) UIScrollView       *currentScrollView;
+@property (nonatomic, weak)   UIScrollView       *currentScrollView;
 @property (nonatomic, strong) NSLayoutConstraint *headerOriginYConstraint;
 @property (nonatomic, strong) NSLayoutConstraint *headerSizeHeightConstraint;
 @property (nonatomic, assign) CGFloat            headerViewHeight;
@@ -26,6 +26,9 @@
 @property (nonatomic, assign) BOOL               isSwitching;
 
 @property (nonatomic, strong) NSMutableArray     *segmentButtonConstraintArray;
+
+@property (nonatomic, strong) UIView             *currentTouchView;
+@property (nonatomic, strong) UIButton           *currentTouchButton;
 
 @end
 
@@ -107,7 +110,7 @@ static NSInteger pagingButtonTag                 = 1000;
         v.alwaysBounceVertical = YES;
         v.showsVerticalScrollIndicator = NO;
         //v.contentOffset = CGPointMake(0., -self.headerViewHeight-self.segmentBarHeight);
-        [v.panGestureRecognizer addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:HHHorizontalPagingViewPanContext];
+        [v.panGestureRecognizer addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewPanContext];
         [v addObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewScrollContext];
         
     }
@@ -208,11 +211,31 @@ static NSInteger pagingButtonTag                 = 1000;
     });
 }
 
+- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event {
+    if(point.x < 20) {
+        return NO;
+    }
+    return YES;
+}
+
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *view = [super hitTest:point withEvent:event];
-    
-    if (view == self.headerView || view == self.segmentView) {
+    if ([view isDescendantOfView:self.headerView] || [view isDescendantOfView:self.segmentView]) {
         self.horizontalCollectionView.scrollEnabled = NO;
+        
+        self.currentTouchView = nil;
+        self.currentTouchButton = nil;
+        
+        [self.segmentButtons enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if(obj == view) {
+                self.currentTouchButton = obj;
+            }
+        }];
+        if(!self.currentTouchButton) {
+            self.currentTouchView = view;
+        }else {
+            return view;
+        }
         return self.currentScrollView;
     }
     return view;
@@ -272,9 +295,21 @@ static NSInteger pagingButtonTag                 = 1000;
     if(context == &HHHorizontalPagingViewPanContext) {
         
         self.horizontalCollectionView.scrollEnabled = YES;
+        UIGestureRecognizerState state = [change[NSKeyValueChangeNewKey] integerValue];
+        //failed说明是点击事件
+        if(state == UIGestureRecognizerStateFailed) {
+            if(self.currentTouchButton) {
+                [self segmentButtonEvent:self.currentTouchButton];
+            }else if(self.currentTouchView && self.clickEventViewsBlock) {
+                self.clickEventViewsBlock(self.currentTouchView);
+            }
+            self.currentTouchView = nil;
+            self.currentTouchButton = nil;
+        }
         
     }else if (context == &HHHorizontalPagingViewScrollContext) {
-        
+        self.currentTouchView = nil;
+        self.currentTouchButton = nil;
         if (self.isSwitching) {
             return;
         }
