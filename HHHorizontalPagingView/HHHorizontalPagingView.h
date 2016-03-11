@@ -58,4 +58,18 @@
                                        segmentHeight:(CGFloat)segmentHeight
                                         contentViews:(NSArray *)contentViews;
 
+/**
+ *  手动控制滚动到某个视图
+ *
+ *  @param pageIndex 页号
+ */
+- (void)scrollToIndex:(NSInteger)pageIndex;
+
+/**
+ *  左右滑动
+ *
+ *  @param enable 是否允许滚动
+ */
+- (void)scrollEnable:(BOOL)enable;
+
 @end

@@ -35,6 +35,7 @@
 @implementation HHHorizontalPagingView
 
 static void *HHHorizontalPagingViewScrollContext = &HHHorizontalPagingViewScrollContext;
+static void *HHHorizontalPagingViewInsetContext  = &HHHorizontalPagingViewInsetContext;
 static void *HHHorizontalPagingViewPanContext    = &HHHorizontalPagingViewPanContext;
 static NSString *pagingCellIdentifier            = @"PagingCellIdentifier";
 static NSInteger pagingButtonTag                 = 1000;
@@ -59,6 +60,7 @@ static NSInteger pagingButtonTag                 = 1000;
     pagingView.horizontalCollectionView.delegate                       = pagingView;
     pagingView.horizontalCollectionView.pagingEnabled                  = YES;
     pagingView.horizontalCollectionView.showsHorizontalScrollIndicator = NO;
+    pagingView.horizontalCollectionView.scrollsToTop                   = NO;
     pagingView.headerView                     = headerView;
     pagingView.segmentButtons                 = segmentButtons;
     pagingView.contentViews                   = contentViews;
@@ -75,6 +77,20 @@ static NSInteger pagingButtonTag                 = 1000;
     [pagingView configureContentView];
     
     return pagingView;
+}
+
+- (void)scrollToIndex:(NSInteger)pageIndex {
+    [self segmentButtonEvent:self.segmentButtons[pageIndex]];
+}
+
+- (void)scrollEnable:(BOOL)enable {
+    if(enable) {
+        self.segmentView.userInteractionEnabled     = YES;
+        self.horizontalCollectionView.scrollEnabled = YES;
+    }else {
+        self.segmentView.userInteractionEnabled     = NO;
+        self.horizontalCollectionView.scrollEnabled = NO;
+    }
 }
 
 - (void)configureHeaderView {
@@ -112,6 +128,7 @@ static NSInteger pagingButtonTag                 = 1000;
         //v.contentOffset = CGPointMake(0., -self.headerViewHeight-self.segmentBarHeight);
         [v.panGestureRecognizer addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewPanContext];
         [v addObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewScrollContext];
+        [v addObserver:self forKeyPath:NSStringFromSelector(@selector(contentInset)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewInsetContext];
         
     }
     self.currentScrollView = [self.contentViews firstObject];
@@ -347,6 +364,18 @@ static NSInteger pagingButtonTag                 = 1000;
             }
             
         }
+    }else if(context == &HHHorizontalPagingViewInsetContext) {
+        
+        if(self.currentScrollView.contentOffset.y > -self.segmentBarHeight) {
+            return;
+        }
+        [UIView animateWithDuration:0.2 animations:^{
+            self.headerOriginYConstraint.constant = -self.headerViewHeight-self.segmentBarHeight-self.currentScrollView.contentOffset.y;
+            [self layoutIfNeeded];
+            [self.headerView layoutIfNeeded];
+            [self.segmentView layoutIfNeeded];
+        }];
+        
     }
     
 }
@@ -373,6 +402,7 @@ static NSInteger pagingButtonTag                 = 1000;
     for(UIScrollView *v in self.contentViews) {
         [v.panGestureRecognizer removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:&HHHorizontalPagingViewPanContext];
         [v removeObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset)) context:&HHHorizontalPagingViewScrollContext];
+        [v removeObserver:self forKeyPath:NSStringFromSelector(@selector(contentInset)) context:&HHHorizontalPagingViewInsetContext];
     }
 }
 
