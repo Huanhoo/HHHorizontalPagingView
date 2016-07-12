@@ -13,8 +13,8 @@ HHHorizontalPagingView是一个实现上下滚动时菜单悬停在顶端，并�
 
 ***
 ## 注意事项
-(^clickEventViewsBlock)(UIView *eventView)block  拿到headerView中控件点击事件的回调；
- <p>(^pagingViewSwitchBlock)(NSInteger switchIndex)  滚动视图切换的回调
+headerView中控件点击事件的回调；   (^clickEventViewsBlock)(UIView *eventView)block  
+ <p>滚动视图切换的回调   (^pagingViewSwitchBlock)(NSInteger switchIndex)  
 
 
 ## CocoaPods
