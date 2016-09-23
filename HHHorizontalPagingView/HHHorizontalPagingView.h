@@ -42,6 +42,11 @@
 @property (nonatomic, copy) void (^clickEventViewsBlock)(UIView *eventView);
 
 /**
+ *  视图滚动的回调block
+ */
+@property (nonatomic, copy) void (^scrollViewDidScrollBlock)(CGFloat offset);
+
+/**
  *  实例化横向分页控件
  *
  *  @param headerView     tableHeaderView

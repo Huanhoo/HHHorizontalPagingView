@@ -37,8 +37,8 @@
 static void *HHHorizontalPagingViewScrollContext = &HHHorizontalPagingViewScrollContext;
 static void *HHHorizontalPagingViewInsetContext  = &HHHorizontalPagingViewInsetContext;
 static void *HHHorizontalPagingViewPanContext    = &HHHorizontalPagingViewPanContext;
-static NSString *pagingCellIdentifier            = @"PagingCellIdentifier";
-static NSInteger pagingButtonTag                 = 1000;
+static NSString *kPagingCellIdentifier            = @"kPagingCellIdentifier";
+static NSInteger kPagingButtonTag                 = 1000;
 
 #pragma mark - HHHorizontalPagingView
 + (HHHorizontalPagingView *)pagingViewWithHeaderView:(UIView *)headerView
@@ -54,13 +54,16 @@ static NSInteger pagingButtonTag                 = 1000;
     HHHorizontalPagingView *pagingView = [[HHHorizontalPagingView alloc] initWithFrame:CGRectMake(0., 0., [[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)];
     
     pagingView.horizontalCollectionView = [[UICollectionView alloc] initWithFrame:pagingView.frame collectionViewLayout:layout];
-    [pagingView.horizontalCollectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:pagingCellIdentifier];
+    [pagingView.horizontalCollectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:kPagingCellIdentifier];
     pagingView.horizontalCollectionView.backgroundColor                = [UIColor clearColor];
     pagingView.horizontalCollectionView.dataSource                     = pagingView;
     pagingView.horizontalCollectionView.delegate                       = pagingView;
     pagingView.horizontalCollectionView.pagingEnabled                  = YES;
     pagingView.horizontalCollectionView.showsHorizontalScrollIndicator = NO;
     pagingView.horizontalCollectionView.scrollsToTop                   = NO;
+    if([pagingView.horizontalCollectionView respondsToSelector:@selector(setPrefetchingEnabled:)]) {
+        pagingView.horizontalCollectionView.prefetchingEnabled = NO;
+    }
     pagingView.headerView                     = headerView;
     pagingView.segmentButtons                 = segmentButtons;
     pagingView.contentViews                   = contentViews;
@@ -163,7 +166,7 @@ static NSInteger pagingButtonTag                 = 1000;
         for(int i = 0; i < [self.segmentButtons count]; i++) {
             UIButton *segmentButton = self.segmentButtons[i];
             [segmentButton removeConstraints:self.segmentButtonConstraintArray];
-            segmentButton.tag = pagingButtonTag+i;
+            segmentButton.tag = kPagingButtonTag+i;
             [segmentButton addTarget:self action:@selector(segmentButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
             [_segmentView addSubview:segmentButton];
             
@@ -199,7 +202,7 @@ static NSInteger pagingButtonTag                 = 1000;
     }
     [segmentButton setSelected:YES];
     
-    NSInteger clickIndex = segmentButton.tag-pagingButtonTag;
+    NSInteger clickIndex = segmentButton.tag-kPagingButtonTag;
     
     [self.horizontalCollectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:clickIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
     if(self.currentScrollView.contentOffset.y<-(self.headerViewHeight+self.segmentBarHeight)) {
@@ -280,7 +283,7 @@ static NSInteger pagingButtonTag                 = 1000;
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     self.isSwitching = YES;
-    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:pagingCellIdentifier forIndexPath:indexPath];
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:kPagingCellIdentifier forIndexPath:indexPath];
     cell.backgroundColor = [UIColor clearColor];
     for(UIView *v in cell.contentView.subviews) {
         [v removeFromSuperview];
@@ -364,6 +367,11 @@ static NSInteger pagingButtonTag                 = 1000;
             }
             
         }
+        
+        if(self.scrollViewDidScrollBlock) {
+            self.scrollViewDidScrollBlock(newOffsetY);
+        }
+        
     }else if(context == &HHHorizontalPagingViewInsetContext) {
         
         if(self.currentScrollView.contentOffset.y > -self.segmentBarHeight) {
@@ -385,7 +393,7 @@ static NSInteger pagingButtonTag                 = 1000;
     NSInteger currentPage = scrollView.contentOffset.x/[[UIScreen mainScreen] bounds].size.width;
     
     for(UIButton *b in self.segmentButtons) {
-        if(b.tag - pagingButtonTag == currentPage) {
+        if(b.tag - kPagingButtonTag == currentPage) {
             [b setSelected:YES];
         }else {
             [b setSelected:NO];
