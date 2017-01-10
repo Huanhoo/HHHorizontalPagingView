@@ -21,3 +21,7 @@ headerView中控件点击事件的回调：   (^clickEventViewsBlock)(UIView *ev
 通过CocoaPods集成
 
     pod 'HHHorizontalPagingView'        
+
+## 项目介绍 
+
+可以移步本人[博客](http://huanhoo.net/2016/02/26/%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E4%BA%A4%E4%BA%92%E7%9A%84%E5%A4%8D%E6%9D%82%E5%AE%9E%E7%8E%B0%EF%BC%88%E7%AE%80%E4%B9%A6%E4%B8%AA%E4%BA%BA%E9%A1%B5%E6%95%88%E6%9E%9C%EF%BC%89)，有详细介绍
