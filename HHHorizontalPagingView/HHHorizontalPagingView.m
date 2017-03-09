@@ -222,9 +222,13 @@ static NSInteger kPagingButtonTag                 = 1000;
     CGFloat headerViewDisplayHeight = self.headerViewHeight + self.headerView.frame.origin.y;
     [self.currentScrollView layoutIfNeeded];
     if(self.currentScrollView.contentOffset.y < -self.segmentBarHeight) {
-        [self.currentScrollView setContentOffset:CGPointMake(0, -headerViewDisplayHeight-self.segmentBarHeight)];
+        //如果视图滚动的offsetY小于segmentBar，说明视图与segmentBar处于分离状态。则调整视图offsetY到segmentBar下方
+        [self.currentScrollView setContentOffset:CGPointMake(0, -headerViewDisplayHeight - self.segmentBarHeight)];
     }else {
-        [self.currentScrollView setContentOffset:CGPointMake(0, self.currentScrollView.contentOffset.y-headerViewDisplayHeight)];
+        //如果当前滚动区域不足以将segmentBar滑到顶部，则调整offsetY
+        if(self.currentScrollView.contentOffset.y + self.currentScrollView.bounds.size.height > self.currentScrollView.contentSize.height - headerViewDisplayHeight + self.segmentTopSpace) {
+            [self.currentScrollView setContentOffset:CGPointMake(0, self.currentScrollView.contentOffset.y - headerViewDisplayHeight + self.segmentTopSpace)];
+        }
     }
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0)), dispatch_get_main_queue(), ^{
         self.isSwitching = NO;
