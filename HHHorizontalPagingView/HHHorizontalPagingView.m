@@ -53,7 +53,7 @@ static NSInteger kPagingButtonTag                 = 1000;
     
     HHHorizontalPagingView *pagingView = [[HHHorizontalPagingView alloc] initWithFrame:CGRectMake(0., 0., [[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)];
     
-    pagingView.horizontalCollectionView = [[UICollectionView alloc] initWithFrame:pagingView.frame collectionViewLayout:layout];
+    pagingView.horizontalCollectionView = [[UICollectionView alloc] initWithFrame:pagingView.bounds collectionViewLayout:layout];
     [pagingView.horizontalCollectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:kPagingCellIdentifier];
     pagingView.horizontalCollectionView.backgroundColor                = [UIColor clearColor];
     pagingView.horizontalCollectionView.dataSource                     = pagingView;
