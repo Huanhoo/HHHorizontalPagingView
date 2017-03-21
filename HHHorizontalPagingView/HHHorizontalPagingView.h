@@ -71,9 +71,18 @@
 - (void)scrollToIndex:(NSInteger)pageIndex;
 
 /**
- *  左右滑动
+ *  是否允许切换视图
+ *  为NO时不能左右滑动视图，且segmentBar点击无效
  *
- *  @param enable 是否允许滚动
+ *  @param enable 是否允许切换
+ */
+- (void)switchEnable:(BOOL)enable;
+
+/**
+ *  是否允许左右滑动
+ *  为NO时不能左右滑动视图，但segmentBar点击有效
+ *
+ *  @param enable 是否允许滑动（为NO时segmentBar点击有效）
  */
 - (void)scrollEnable:(BOOL)enable;
 

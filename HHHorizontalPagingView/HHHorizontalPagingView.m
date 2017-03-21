@@ -24,6 +24,7 @@
 @property (nonatomic, assign) CGFloat            headerViewHeight;
 @property (nonatomic, assign) CGFloat            segmentBarHeight;
 @property (nonatomic, assign) BOOL               isSwitching;
+@property (nonatomic, assign) BOOL               scrollEnable;
 
 @property (nonatomic, strong) NSMutableArray     *segmentButtonConstraintArray;
 
@@ -69,6 +70,7 @@ static NSInteger kPagingButtonTag                 = 1000;
     pagingView.contentViews                   = contentViews;
     pagingView.headerViewHeight               = headerHeight;
     pagingView.segmentBarHeight               = segmentHeight;
+    pagingView.scrollEnable                   = YES;
     pagingView.segmentButtonConstraintArray   = [NSMutableArray array];
     
     UICollectionViewFlowLayout *tempLayout = (id)pagingView.horizontalCollectionView.collectionViewLayout;
@@ -86,13 +88,25 @@ static NSInteger kPagingButtonTag                 = 1000;
     [self segmentButtonEvent:self.segmentButtons[pageIndex]];
 }
 
-- (void)scrollEnable:(BOOL)enable {
+- (void)switchEnable:(BOOL)enable {
     if(enable) {
         self.segmentView.userInteractionEnabled     = YES;
         self.horizontalCollectionView.scrollEnabled = YES;
+        self.scrollEnable                           = YES;
     }else {
         self.segmentView.userInteractionEnabled     = NO;
         self.horizontalCollectionView.scrollEnabled = NO;
+        self.scrollEnable                           = NO;
+    }
+}
+
+- (void)scrollEnable:(BOOL)enable {
+    if(enable) {
+        self.horizontalCollectionView.scrollEnabled = YES;
+        self.scrollEnable                           = YES;
+    }else {
+        self.horizontalCollectionView.scrollEnabled = NO;
+        self.scrollEnable                           = NO;
     }
 }
 
@@ -318,7 +332,9 @@ static NSInteger kPagingButtonTag                 = 1000;
     
     if(context == &HHHorizontalPagingViewPanContext) {
         
-        self.horizontalCollectionView.scrollEnabled = YES;
+        if(self.scrollEnable) {
+            self.horizontalCollectionView.scrollEnabled = YES;
+        }
         UIGestureRecognizerState state = [change[NSKeyValueChangeNewKey] integerValue];
         //failed说明是点击事件
         if(state == UIGestureRecognizerStateFailed) {
