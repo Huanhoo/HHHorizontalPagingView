@@ -147,6 +147,10 @@ static NSInteger kPagingButtonTag                 = 1000;
         [v addObserver:self forKeyPath:NSStringFromSelector(@selector(contentOffset)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewScrollContext];
         [v addObserver:self forKeyPath:NSStringFromSelector(@selector(contentInset)) options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:&HHHorizontalPagingViewInsetContext];
         
+        if (@available(iOS 11.0, *)) {
+            v.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+        
     }
     self.currentScrollView = [self.contentViews firstObject];
 }
