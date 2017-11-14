@@ -228,11 +228,21 @@ static NSInteger kPagingButtonTag                 = 1000;
     }else {
         [self.currentScrollView setContentOffset:self.currentScrollView.contentOffset animated:NO];
     }
+    
+    //Avoid the contentView space bug when switch content and scroll down/up immediately
+    //Restore scrollEnabled in next runloop
+    self.currentScrollView.scrollEnabled = NO;
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.currentScrollView.scrollEnabled = YES;
+    });
+    
     self.currentScrollView = self.contentViews[clickIndex];
     
     if(self.pagingViewSwitchBlock) {
         self.pagingViewSwitchBlock(clickIndex);
     }
+    
 }
 
 - (void)adjustContentViewOffset {
